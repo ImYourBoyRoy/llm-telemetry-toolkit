@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-telemetry-toolkit"
+version = "0.1.0"
+description = "A standardized, file-based telemetry toolkit for LLM Agents."
+readme = "README.md"
+authors = [
+    {name = "Roy Dawson IV", email = "roy@example.com"},
+]
+license = "MIT"
+requires-python = ">=3.8"
+keywords = ["llm", "logging", "telemetry", "observability", "agent", "pydantic", "json", "markdown"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/imyourboyroy/llm-telemetry-toolkit"
+Repository = "https://github.com/imyourboyroy/llm-telemetry-toolkit"
+"Bug Tracker" = "https://github.com/imyourboyroy/llm-telemetry-toolkit/issues"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_telemetry_toolkit"]
