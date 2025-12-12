@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test & Lint (${{ matrix.os }} / py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12", "3.13" ]
+
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONWARNINGS: default
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Upgrade pip
+        run: python -m pip install -U pip
+
+      - name: Install project and tooling
+        run: |
+          python -m pip install -e .
+          python -m pip install -U ruff pytest build twine
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest -v
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Twine check metadata
+        run: python -m twine check dist/*
+
+      - name: Smoke test wheel install and CLI
+        shell: bash
+        run: |
+          python -m pip install --force-reinstall dist/*.whl
+          python -c "import llm_telemetry_toolkit; print('Toolkit version:', getattr(llm_telemetry_toolkit, '__version__', 'unknown'))"
+          # verify CLI entry point
+          python -m llm_telemetry_toolkit.interface.cli --help
