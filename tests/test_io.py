@@ -5,7 +5,7 @@ Unit tests for IO components (Formatters, Parser).
 
 import unittest
 import json
-from test_helper import setup_test_environment
+from tests.test_helper import setup_test_environment
 
 setup_test_environment()
 

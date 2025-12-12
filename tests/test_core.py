@@ -8,7 +8,7 @@ import unittest
 import time
 import shutil
 from pathlib import Path
-from test_helper import setup_test_environment
+from tests.test_helper import setup_test_environment
 
 setup_test_environment()
 

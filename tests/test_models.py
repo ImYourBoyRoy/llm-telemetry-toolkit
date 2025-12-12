@@ -5,7 +5,7 @@ Unit tests for Data Models (Schema, Config, Results).
 
 import unittest
 from pathlib import Path
-from test_helper import setup_test_environment
+from tests.test_helper import setup_test_environment
 
 # clean pycache before imports
 setup_test_environment()
