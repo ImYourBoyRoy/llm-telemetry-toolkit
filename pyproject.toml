@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A standardized, file-based telemetry toolkit for LLM Agents."
 readme = "README.md"
 authors = [
-    {name = "Roy Dawson IV", email = "roy@example.com"},
+    {name = "Roy Dawson IV", email = "roy.dawson.iv@gmail.com"},
 ]
 license = "MIT"
 requires-python = ">=3.8"
