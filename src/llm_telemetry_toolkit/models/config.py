@@ -9,7 +9,7 @@ Outputs: Validated TelemetryConfig object.
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TelemetryConfig(BaseModel):
@@ -67,5 +67,4 @@ class TelemetryConfig(BaseModel):
         description="Enable smart PII redaction (Email, IP, Phone, Credit Card).",
     )
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)

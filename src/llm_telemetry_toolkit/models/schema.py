@@ -10,7 +10,7 @@ import uuid
 from typing import Dict, Any, Optional
 
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 def now_utc() -> datetime:
@@ -64,6 +64,4 @@ class LLMInteraction(BaseModel):
     # Flexible Metadata
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    class Config:
-        populate_by_name = True
-        extra = "allow"  # Allow arbitrary extra fields
+    model_config = ConfigDict(populate_by_name=True, extra="allow")

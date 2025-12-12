@@ -67,6 +67,7 @@ class TestCore(unittest.TestCase):
 
         subdir = self.test_dir / "llm_interactions" / "core_test_sess"
         files = list(subdir.glob("*.json"))
+        files = [f for f in subdir.glob("*.json") if f.name != "session_config.json"]
         self.assertEqual(len(files), 1)
 
     def test_logger_multiton(self):
