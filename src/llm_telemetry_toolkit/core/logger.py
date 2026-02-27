@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import queue
 import threading
 import time
@@ -91,7 +92,9 @@ class LLMLogger:
 
     @staticmethod
     def _build_instance_key(config: TelemetryConfig) -> str:
-        resolved_base = str(Path(config.base_log_dir).expanduser().resolve())
+        resolved_base = os.path.normcase(
+            os.path.abspath(os.fspath(Path(config.base_log_dir).expanduser()))
+        )
         output_formats = ",".join(config.output_formats)
         return "|".join(
             [
