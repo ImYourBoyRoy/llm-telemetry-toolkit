@@ -1,13 +1,17 @@
-# ./llm-telemetry-toolkit/src/llm_telemetry_toolkit/interface/cli.py
+# ./src/llm_telemetry_toolkit/interface/cli.py
 """
-CLI Interface for the LLM Telemetry Toolkit.
-Provides commands to view logs and calculate statistics using Rich for a "Sexy" UI.
-Inputs: Command line arguments (session_id, dir).
-Outputs: Rich console dashboard.
+Provide the interactive CLI for viewing and summarizing telemetry sessions.
+Used as the package console entry point and as `python -m` module execution target.
+Run: `llm-telemetry-toolkit <command>` or `python -m llm_telemetry_toolkit.interface.cli`.
+Inputs: CLI flags for session id, base log directory, and display limits.
+Outputs: Rich-rendered session panels and aggregate stats in terminal output.
+Side effects: Reads telemetry files from disk; no remote calls.
+Operational notes: Handles absent/invalid log files gracefully to keep CLI resilient.
 """
 
 import argparse
 import json
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 # Formatting
@@ -25,8 +29,17 @@ except ImportError:
 console = Console(force_terminal=True, color_system="auto", legacy_windows=False)
 
 
+def _resolve_version() -> str:
+    try:
+        return version("llm-telemetry-toolkit")
+    except PackageNotFoundError:
+        return "0.0.0+dev"
+
+
 def main():
-    parser = argparse.ArgumentParser(description="LLM Telemetry Toolkit CLI (v0.1.0)")
+    parser = argparse.ArgumentParser(
+        description=f"LLM Telemetry Toolkit CLI (v{_resolve_version()})"
+    )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # VIEW Command
@@ -59,11 +72,12 @@ def main():
 
 def _show_banner():
     """Displays a cool ASCII art banner."""
+    current_version = _resolve_version()
     console.print(
         Panel.fit(
             "[bold cyan]LLM Telemetry Toolkit[/bold cyan]\n[dim]Standardized Observability for Agents[/dim]",
             border_style="cyan",
-            title="v0.1.0",
+            title=f"v{current_version}",
         )
     )
 

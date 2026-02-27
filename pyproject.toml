@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.25", "hatch-vcs>=0.4"]
 build-backend = "hatchling.build"
 
 [project]
 name = "llm-telemetry-toolkit"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A standardized, file-based telemetry toolkit for LLM Agents."
 readme = "README.md"
 authors = [
@@ -32,13 +32,27 @@ classifiers = [
 dependencies = [
     "pydantic>=2.0",
     "rich>=10.0",
+    "httpx>=0.27,<1",
 ]
+
+[project.optional-dependencies]
+otel = [
+    "opentelemetry-api>=1.24",
+    "opentelemetry-sdk>=1.24",
+    "opentelemetry-exporter-otlp-proto-http>=1.24",
+]
+
+[project.scripts]
+llm-telemetry-toolkit = "llm_telemetry_toolkit.interface.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/imyourboyroy/llm-telemetry-toolkit"
 Repository = "https://github.com/imyourboyroy/llm-telemetry-toolkit"
 "Bug Tracker" = "https://github.com/imyourboyroy/llm-telemetry-toolkit/issues"
 
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "v(?P<version>.*)"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/llm_telemetry_toolkit"]

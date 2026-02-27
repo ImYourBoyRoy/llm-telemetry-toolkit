@@ -1,45 +1,56 @@
-# ./llm-telemetry-toolkit/src/llm_telemetry_toolkit/io/formatters.py
+# ./src/llm_telemetry_toolkit/io/formatters.py
 """
-Output formatters for telemetry logs.
-Implements the Strategy pattern to support JSON, CSV, and Markdown outputs.
-Inputs: LLMInteraction objects.
-Outputs: Formatted strings (JSON/CSV/MD).
+Render telemetry interactions into on-disk output formats.
+Used by `LLMLogger` write paths to produce JSON, Markdown, and CSV records.
+Run: Imported by logger internals; not intended for standalone CLI execution.
+Inputs: `LLMInteraction` plus `TelemetryConfig` formatting options.
+Outputs: Serialized text payloads and deterministic file extensions.
+Side effects: None in-memory; file writes are handled by logger components.
+Operational notes: Unknown formats fail fast to prevent silent format drift in production.
 """
 
-import json
+from __future__ import annotations
+
 import csv
 import io
+import json
 from abc import ABC, abstractmethod
+from typing import Any, Dict
 
+from ..models.config import SUPPORTED_OUTPUT_FORMATS, TelemetryConfig
 from ..models.schema import LLMInteraction
-from ..models.config import TelemetryConfig
 
 
 class LogFormatter(ABC):
-    """Abstract base class for log formatters."""
+    """Abstract contract for telemetry formatters."""
 
     @abstractmethod
     def format(self, interaction: LLMInteraction, config: TelemetryConfig) -> str:
-        """Formats the interaction into a string representation."""
-        pass
+        """Return a serialized string representation for one interaction."""
 
     @abstractmethod
     def file_extension(self) -> str:
-        """Returns the file extension for this format (e.g. 'json')."""
-        pass
+        """Return the format extension (without leading dot)."""
 
 
 class JsonFormatter(LogFormatter):
+    """Serialize interactions as pretty JSON while honoring config settings."""
+
     def format(self, interaction: LLMInteraction, config: TelemetryConfig) -> str:
-        # Use simple json.dumps to control ensure_ascii
-        data = interaction.model_dump(exclude_none=True)
-        return json.dumps(data, indent=config.json_indent, ensure_ascii=False)
+        data = interaction.model_dump(mode="json", exclude_none=True)
+        return json.dumps(
+            data,
+            indent=config.json_indent,
+            ensure_ascii=config.ensure_ascii,
+        )
 
     def file_extension(self) -> str:
         return "json"
 
 
 class MarkdownFormatter(LogFormatter):
+    """Serialize interactions into a readable markdown report."""
+
     def format(self, interaction: LLMInteraction, config: TelemetryConfig) -> str:
         lines = []
         lines.append(f"# Interaction: {interaction.interaction_id}")
@@ -72,7 +83,7 @@ class MarkdownFormatter(LogFormatter):
         if interaction.metadata:
             lines.append("## Metadata")
             lines.append("```json")
-            lines.append(json.dumps(interaction.metadata, indent=2))
+            lines.append(json.dumps(interaction.metadata, indent=2, ensure_ascii=False))
             lines.append("```")
 
         return "\n".join(lines)
@@ -82,17 +93,17 @@ class MarkdownFormatter(LogFormatter):
 
 
 class CsvFormatter(LogFormatter):
+    """Serialize interactions as a one-row CSV payload with flattened metadata."""
+
     def format(self, interaction: LLMInteraction, config: TelemetryConfig) -> str:
-        # CSV log files are typically one file per interaction,
-        # but flattened structure is key here.
-        flat = interaction.model_dump(exclude_none=True)
-        # We need to flatten metadata
-        meta = flat.pop("metadata", {})
-        for k, v in meta.items():
-            flat[f"meta_{k}"] = v
+        del config  # Reserved for future CSV-specific options.
+        flat = interaction.model_dump(mode="json", exclude_none=True)
+        metadata = flat.pop("metadata", {})
+        for key, value in metadata.items():
+            flat[f"meta_{key}"] = _coerce_csv_value(value)
 
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=flat.keys())
+        writer = csv.DictWriter(output, fieldnames=list(flat.keys()))
         writer.writeheader()
         writer.writerow(flat)
         return output.getvalue()
@@ -101,8 +112,17 @@ class CsvFormatter(LogFormatter):
         return "csv"
 
 
+def _coerce_csv_value(value: Any) -> str:
+    """Convert nested values to safe CSV cells without losing semantic structure."""
+    if isinstance(value, (dict, list, tuple)):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    return str(value)
+
+
 class FormatterFactory:
-    _formatters = {
+    """Resolve formatter implementations by configured output format name."""
+
+    _formatters: Dict[str, LogFormatter] = {
         "json": JsonFormatter(),
         "md": MarkdownFormatter(),
         "csv": CsvFormatter(),
@@ -110,4 +130,10 @@ class FormatterFactory:
 
     @classmethod
     def get_formatter(cls, fmt: str) -> LogFormatter:
-        return cls._formatters.get(fmt.lower(), JsonFormatter())
+        normalized = fmt.strip().lower()
+        if normalized not in cls._formatters:
+            supported = ", ".join(sorted(SUPPORTED_OUTPUT_FORMATS))
+            raise ValueError(
+                f"Unsupported output format '{fmt}'. Supported formats: {supported}."
+            )
+        return cls._formatters[normalized]

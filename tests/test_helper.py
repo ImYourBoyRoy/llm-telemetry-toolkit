@@ -1,7 +1,12 @@
-# ./llm-telemetry-toolkit/tests/test_helper.py
+# ./tests/test_helper.py
 """
-Test Helper Module.
-Provides utilities for test setup, specifically __pycache__ cleaning.
+Provide reusable setup utilities for this test suite.
+Used by test modules to enforce clean import state and source-path resolution.
+Run: Imported by `unittest` or `pytest` test modules.
+Inputs: Project root path inferred from file location.
+Outputs: Cleaned `__pycache__` directories and configured `sys.path`.
+Side effects: Deletes cache directories under project root during test startup.
+Operational notes: Cache scrubbing guarantees fresh bytecode for continuity checks.
 """
 
 import sys

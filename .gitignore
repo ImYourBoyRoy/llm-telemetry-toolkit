@@ -1,0 +1,108 @@
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Native extensions
+*.so
+
+# Packaging / build artifacts
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+wheelhouse/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.conda/
+conda-env/
+env.bak/
+venv.bak/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.cache/
+coverage.xml
+nosetests.xml
+*.cover
+*.py,cover
+cover/
+
+# Static analysis / lint caches
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+.envrc
+.python-version
+settings.cfg
+*.local.cfg
+
+# Logs and runtime artifacts
+*.log
+*.pid
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.iml
+*.code-workspace
+
+# Quality Gate / local tooling artifacts
+.quality_gate_logs/
+.quality_gate_venvs/
+.artifacts/
+*.bak
+*.bak.*
+
+# Project runtime output artifacts
+logs/
+llm_interactions/
+entity_llm_interactions/
+ollama_telemetry_logs/
+test_output/
+tests_output/
+test_core_logs/
+test_core_logs_*/
+test_ollama_logs/
+tmp_*/
+
+# Generated version files from legacy/local build hooks
+src/llm_telemetry_toolkit/_version.py

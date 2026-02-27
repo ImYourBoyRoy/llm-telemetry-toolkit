@@ -1,9 +1,12 @@
-# ./llm-telemetry-toolkit/src/llm_telemetry_toolkit/core/context.py
+# ./src/llm_telemetry_toolkit/core/context.py
 """
-Context Management for implicit session handling.
-Uses Python's contextvars to maintain session state across call stacks.
-Inputs: Session IDs.
-Outputs: Context managers and current state.
+Manage implicit session context for telemetry logging across call stacks.
+Used by decorators and manual logging flows to avoid passing session_id everywhere.
+Run: Imported by logger/decorator consumers; no standalone CLI execution.
+Inputs: Session IDs passed to `SessionContext`.
+Outputs: Context manager state and `get_current_session_id()` lookup values.
+Side effects: Updates a context-local variable for the active execution scope.
+Operational notes: Context values are isolated per task/thread via `contextvars`.
 """
 
 import contextvars

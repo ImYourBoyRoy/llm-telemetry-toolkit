@@ -1,7 +1,12 @@
-# ./llm-telemetry-toolkit/src/llm_telemetry_toolkit/io/__init__.py
+# ./src/llm_telemetry_toolkit/io/__init__.py
 """
-IO sub-package.
-Contains Input/Output strategies: Formatters (Strategy Pattern), Parsing, and Utils.
+Expose I/O helpers used by the telemetry logger pipeline.
+Used internally and by advanced integrations needing direct parser/formatter access.
+Run: Imported by logger components and optional extension code.
+Inputs: None.
+Outputs: Public formatter factory and content parser exports.
+Side effects: None.
+Operational notes: Utility helpers stay internal unless explicitly exported here.
 """
 
 from .formatters import FormatterFactory

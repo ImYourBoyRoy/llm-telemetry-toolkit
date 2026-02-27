@@ -1,13 +1,19 @@
-# ./llm-telemetry-toolkit/src/llm_telemetry_toolkit/io/parser.py
+# ./src/llm_telemetry_toolkit/io/parser.py
 """
-Content parsers and sanitizers.
-Handles text truncation and extraction of special tags (like <think>).
-Inputs: Raw text strings.
-Outputs: Cleaned/Truncated strings, extracted components.
+Parse and sanitize prompt/response text before persistence.
+Used by `LLMLogger` to extract reasoning tags and apply truncation or redaction.
+Run: Imported as part of logger workflow; no direct CLI execution path.
+Inputs: Raw model text plus telemetry config limits.
+Outputs: Clean text, extracted thought blocks, and redacted PII-safe strings.
+Side effects: None.
+Operational notes: Regex-based masking is best-effort and should complement upstream controls.
 """
 
 import re
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
+
+from pydantic import BaseModel
+
 from ..models.config import TelemetryConfig
 
 
@@ -143,3 +149,31 @@ class ContentParser:
         text = re.sub(pattern, replacement, text)
 
         return text
+
+    @staticmethod
+    def redact_pii_recursive(value: Any) -> Any:
+        """
+        Recursively redact PII from nested dict/list/string payloads.
+        Non-string scalar values are returned unchanged.
+        """
+        if isinstance(value, str):
+            return ContentParser.redact_pii(value)
+        if isinstance(value, BaseModel):
+            redacted_data = {
+                key: ContentParser.redact_pii_recursive(item)
+                for key, item in value.model_dump(mode="python").items()
+            }
+            try:
+                return value.__class__.model_validate(redacted_data)
+            except Exception:
+                return redacted_data
+        if isinstance(value, list):
+            return [ContentParser.redact_pii_recursive(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(ContentParser.redact_pii_recursive(item) for item in value)
+        if isinstance(value, dict):
+            return {
+                key: ContentParser.redact_pii_recursive(item)
+                for key, item in value.items()
+            }
+        return value

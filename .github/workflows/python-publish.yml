@@ -1,9 +1,20 @@
-# .github/workflows/publish.yml
+# .github/workflows/python-publish.yml
 name: Publish to PyPI
 
-on:
-  release:
-    types: [published]
+"on":
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: "Select package index target."
+        required: true
+        default: pypi
+        type: choice
+        options:
+          - pypi
+          - testpypi
 
 permissions:
   contents: read
@@ -33,6 +44,7 @@ jobs:
           path: dist/
 
   pypi-publish:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target == 'pypi')
     runs-on: ubuntu-latest
     needs:
       - release-build
@@ -40,7 +52,6 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
 
-    # Dedicated environments with protections for publishing are strongly recommended.
     environment:
       name: pypi
       url: https://pypi.org/project/llm-telemetry-toolkit/
@@ -56,3 +67,26 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+
+  testpypi-publish:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target == 'testpypi'
+    runs-on: ubuntu-latest
+    needs:
+      - release-build
+    permissions:
+      id-token: write
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/llm-telemetry-toolkit/
+    steps:
+      - name: Retrieve release distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
+
+      - name: Publish release distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          repository-url: https://test.pypi.org/legacy/

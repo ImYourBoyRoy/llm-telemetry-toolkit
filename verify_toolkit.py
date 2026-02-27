@@ -1,4 +1,14 @@
-# llm-telemetry-toolkit/verify_toolkit.py
+# ./verify_toolkit.py
+"""
+Execute a local functional smoke test for key telemetry toolkit capabilities.
+Used during development to validate async writes, PII masking, and CLI rendering.
+Run: `python verify_toolkit.py` from project root with local Python environment.
+Inputs: Built-in test prompts and telemetry configuration values in this script.
+Outputs: Files under `test_output` and Rich CLI sample output in terminal.
+Side effects: Deletes/recreates temporary output directories and spawns a subprocess CLI call.
+Operational notes: Best for manual verification, not a replacement for unit tests.
+"""
+
 import sys
 import shutil
 import time
@@ -48,7 +58,7 @@ def main():
 
         # PII Test Prompt
         pii_prompt = (
-            "My email is roy@example.com, IP is 192.168.1.1, phone +1 (555) 123-4567. "
+            "My email is roy@example.com, IP is 203.0.113.10, phone +1 (555) 123-4567. "
             "Card: 4111 2222 3333 4444"
         )
 
